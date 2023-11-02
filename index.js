@@ -1,5 +1,7 @@
 const fs = require("fs");
 const { Client, GatewayIntentBits } = require("discord.js");
+const { initializeSummonerDatabase } = require("./database");
+
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
@@ -21,6 +23,11 @@ client
 client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
+  console.log("Initializing summoner database.");
+  initializeSummonerDatabase();
+  console.log("successfully initialized summoner database.");
+
+  console.log("Registering slash commands.");
   const rest = client.application.commands;
 
   commandFiles = fs

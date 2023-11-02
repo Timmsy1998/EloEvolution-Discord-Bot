@@ -1,11 +1,11 @@
-const { CommandInteraction, MessageEmbed } = require("discord.js");
+const { CommandInteraction } = require("discord.js");
+const { readSummonerDatabase, writeSummonerDatabase } = require("../database");
 const axios = require("axios");
-const Chart = require("chart.js");
 
 module.exports = {
   data: {
-    name: "summoner",
-    description: "Get summoner information",
+    name: "register",
+    description: "Register a summoner in the database",
     options: [
       {
         name: "region",
@@ -28,7 +28,6 @@ module.exports = {
     const summonerName = interaction.options.getString("name");
 
     try {
-      // Get your Riot API key from your config
       const { riotApiKey } = require("../config.json");
 
       // Fetch the current patch version from the League of Legends Data Dragon API
@@ -135,59 +134,59 @@ module.exports = {
           );
         }
 
-        // Construct an embed with the extended summoner information
-        const embed = {
-          color: 0x0099ff,
-          title: "Summoner Information",
-          thumbnail: {
-            url: `http://ddragon.leagueoflegends.com/cdn/${currentPatch}/img/profileicon/${summoner.profileIconId}.png`
-          },
-          fields: [
-            {
-              name: "Summoner Name",
-              value: summoner.name,
-              inline: true
-            },
-            {
-              name: "Summoner Level",
-              value: summoner.summonerLevel,
-              inline: true
-            },
-            {
-              name: "Favorite Champion (Most Played)",
-              value: mostPlayedChampionName,
-              inline: true
-            },
-            {
-              name: "Winrate",
-              value: `${winPercentage}%`,
-              inline: true
-            },
-            {
-              name: "Win to Loss",
-              value: `${rankedWins}W ${rankedLosses}L`,
-              inline: true
-            },
-            {
-              name: "Rank Information",
-              value: fullRank,
-              inline: true
-            }
-          ]
-        };
+        // Read the current summoner database
+        const database = readSummonerDatabase();
 
-        // Send the embed as a reply
-        await interaction.reply({ embeds: [embed] });
+        // Check if the summoner is already registered
+        const existingSummonerIndex = database.summoners.findIndex(
+          s => s.id === summoner.id
+        );
+
+        if (existingSummonerIndex !== -1) {
+          // Update the existing summoner
+          database.summoners[existingSummonerIndex] = {
+            id: summoner.id,
+            region: region,
+            name: summonerName,
+            profileIconId: summoner.profileIconId,
+            summonerLevel: summoner.summonerLevel,
+            mostPlayedChampion: mostPlayedChampionName,
+            winPercentage: winPercentage,
+            rankedWins: rankedWins,
+            rankedLosses: rankedLosses,
+            fullRank: fullRank,
+            discordUserId: interaction.user.id,
+          };
+        } else {
+          // Add a new summoner to the database
+          database.summoners.push({
+            id: summoner.id,
+            region: region,
+            name: summonerName,
+            profileIconId: summoner.profileIconId,
+            summonerLevel: summoner.summonerLevel,
+            mostPlayedChampion: mostPlayedChampionName,
+            winPercentage: winPercentage,
+            rankedWins: rankedWins,
+            rankedLosses: rankedLosses,
+            fullRank: fullRank,
+            discordUserId: interaction.user.id,
+          });
+        }
+
+        // Write the updated database back to the file
+        writeSummonerDatabase(database);
       } else {
         // Handle an unsupported or unknown region
         await interaction.reply(
           "Unsupported region. Please use a valid region."
         );
       }
+
+      return interaction.reply("Summoner successfully registered.");
     } catch (error) {
-      // Handle errors, such as invalid summoner name or API issues
-      console.error(`Error fetching summoner data: ${error.message}`);
-      await interaction.reply("Error fetching summoner data.");
+      console.error(`Error registering summoner: ${error.message}`);
+      return interaction.reply("Error registering summoner.");
     }
   }
 };
