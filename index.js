@@ -1,6 +1,14 @@
 const fs = require("fs");
-const { Client, GatewayIntentBits } = require("discord.js");
+const {
+  Client,
+  GatewayIntentBits,
+  CommandInteraction,
+  MessageActionRow,
+  MessageSelectMenu
+} = require("discord.js");
 const { initializeSummonerDatabase } = require("./database");
+const updateFunction = require("./tasks/update");
+const axios = require("axios");
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
@@ -10,6 +18,8 @@ const path = require("path");
 
 const commandsDir = "./commands";
 let commandFiles = [];
+
+const updateInterval = 30000; // 30 seconds
 
 client
   .login(discordToken)
@@ -26,6 +36,11 @@ client.once("ready", async () => {
   console.log("Initializing summoner database.");
   initializeSummonerDatabase();
   console.log("successfully initialized summoner database.");
+
+  console.log("Starting update interval.");
+  updateFunction(client);
+  setInterval(() => updateFunction(client), updateInterval);
+  console.log("Successfully started the update interval.");
 
   console.log("Registering slash commands.");
   const rest = client.application.commands;

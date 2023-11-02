@@ -1,5 +1,6 @@
 const { CommandInteraction } = require("discord.js");
 const { readSummonerDatabase, writeSummonerDatabase } = require("../database");
+const updateFunction = require("../tasks/update");
 const axios = require("axios");
 
 module.exports = {
@@ -25,7 +26,7 @@ module.exports = {
   async execute(interaction) {
     // Get the region and summoner name from the user's command input
     const region = interaction.options.getString("region").toLowerCase();
-    const summonerName = interaction.options.getString("name");
+    const summonerName = interaction.options.getString("name").toLowerCase();
 
     try {
       const { riotApiKey } = require("../config.json");
@@ -145,21 +146,32 @@ module.exports = {
         );
 
         if (existingSummonerIndex !== -1) {
-          // Update the existing summoner
-          database.summoners[existingSummonerIndex] = {
-            id: summoner.id,
-            region: region,
-            name: summonerName,
-            profileIconId: summoner.profileIconId,
-            fullicon: fullicon,
-            summonerLevel: summoner.summonerLevel,
-            mostPlayedChampion: mostPlayedChampionName,
-            winPercentage: winPercentage,
-            rankedWins: rankedWins,
-            rankedLosses: rankedLosses,
-            fullRank: fullRank,
-            discordUserId: interaction.user.id,
-          };
+          // Update the existing summoner if the Discord ID matches the owner's ID or is null
+          const existingSummoner = database.summoners[existingSummonerIndex];
+          if (
+            existingSummoner.discordUserId === null ||
+            existingSummoner.discordUserId === interaction.user.id
+          ) {
+            database.summoners[existingSummonerIndex] = {
+              ...existingSummoner,
+              id: summoner.id,
+              region: region,
+              name: summonerName,
+              profileIconId: summoner.profileIconId,
+              fullicon: fullicon,
+              summonerLevel: summoner.summonerLevel,
+              mostPlayedChampion: mostPlayedChampionName,
+              winPercentage: winPercentage,
+              rankedWins: rankedWins,
+              rankedLosses: rankedLosses,
+              fullRank: fullRank,
+              discordUserId: interaction.user.id
+            };
+          } else {
+            return interaction.reply(
+              "Summoner already registered with a different Discord user."
+            );
+          }
         } else {
           // Add a new summoner to the database
           database.summoners.push({
@@ -174,7 +186,7 @@ module.exports = {
             rankedWins: rankedWins,
             rankedLosses: rankedLosses,
             fullRank: fullRank,
-            discordUserId: interaction.user.id,
+            discordUserId: interaction.user.id
           });
         }
 

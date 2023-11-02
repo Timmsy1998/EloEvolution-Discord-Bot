@@ -27,10 +27,11 @@ function writeSummonerDatabase(data) {
 
 function getSummonerDataByRegionAndName(region, summonerName) {
   const summonerDB = readSummonerDatabase();
-  return summonerDB.find(
+  const summoners = summonerDB.summoners;
+  return summoners.find(
     entry =>
-      entry.region.toLowerCase() === region.toLowerCase() &&
-      entry.summonerName.toLowerCase() === summonerName.toLowerCase()
+      entry.region === region &&
+      entry.name.toLowerCase() === summonerName.toLowerCase()
   );
 }
 
@@ -42,8 +43,21 @@ function getSummonerDataByDiscordUserId(discordUserId) {
 
 function registerSummoner(summonerData) {
   const summonerDB = readSummonerDatabase();
-  summonerDB.push(summonerData);
+  summonerDB.summoners.push(summonerData);
   writeSummonerDatabase(summonerDB);
+}
+
+function updateSummonerData(discordUserId, updatedSummonerData) {
+  const summonerDB = readSummonerDatabase();
+
+  const existingSummonerIndex = summonerDB.summoners.findIndex(
+    entry => entry.discordUserId === discordUserId
+  );
+
+  if (existingSummonerIndex !== -1) {
+    summonerDB.summoners[existingSummonerIndex] = updatedSummonerData;
+    writeSummonerDatabase(summonerDB);
+  }
 }
 
 module.exports = {
@@ -52,5 +66,6 @@ module.exports = {
   writeSummonerDatabase,
   getSummonerDataByRegionAndName,
   getSummonerDataByDiscordUserId,
-  registerSummoner
+  registerSummoner,
+  updateSummonerData
 };
