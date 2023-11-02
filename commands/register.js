@@ -134,6 +134,8 @@ module.exports = {
           );
         }
 
+        const fullicon = `http://ddragon.leagueoflegends.com/cdn/${currentPatch}/img/profileicon/${summoner.profileIconId}.png`;
+
         // Read the current summoner database
         const database = readSummonerDatabase();
 
@@ -149,6 +151,7 @@ module.exports = {
             region: region,
             name: summonerName,
             profileIconId: summoner.profileIconId,
+            fullicon: fullicon,
             summonerLevel: summoner.summonerLevel,
             mostPlayedChampion: mostPlayedChampionName,
             winPercentage: winPercentage,
@@ -164,6 +167,7 @@ module.exports = {
             region: region,
             name: summonerName,
             profileIconId: summoner.profileIconId,
+            fullicon: fullicon,
             summonerLevel: summoner.summonerLevel,
             mostPlayedChampion: mostPlayedChampionName,
             winPercentage: winPercentage,

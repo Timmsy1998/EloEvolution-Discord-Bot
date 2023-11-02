@@ -25,8 +25,32 @@ function writeSummonerDatabase(data) {
   fs.writeFileSync(databasePath, JSON.stringify(data, null, 2));
 }
 
+function getSummonerDataByRegionAndName(region, summonerName) {
+  const summonerDB = readSummonerDatabase();
+  return summonerDB.find(
+    entry =>
+      entry.region.toLowerCase() === region.toLowerCase() &&
+      entry.summonerName.toLowerCase() === summonerName.toLowerCase()
+  );
+}
+
+function getSummonerDataByDiscordUserId(discordUserId) {
+  const summonerDB = readSummonerDatabase();
+  const summoners = summonerDB.summoners;
+  return summoners.find(entry => entry.discordUserId === discordUserId);
+}
+
+function registerSummoner(summonerData) {
+  const summonerDB = readSummonerDatabase();
+  summonerDB.push(summonerData);
+  writeSummonerDatabase(summonerDB);
+}
+
 module.exports = {
   initializeSummonerDatabase,
   readSummonerDatabase,
   writeSummonerDatabase,
+  getSummonerDataByRegionAndName,
+  getSummonerDataByDiscordUserId,
+  registerSummoner
 };
