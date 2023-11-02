@@ -53,7 +53,8 @@ module.exports = {
       const rankedWins = summonerData.rankedWins || "N/A";
       const rankedLosses = summonerData.rankedLosses || "N/A";
       const fullRank = summonerData.fullRank || "N/A";
-      const fullicon = summonerData.fullicon || "N/A";      
+      const fullicon = summonerData.fullicon || "N/A";
+      const owner = summonerData.discordUserId || "N/A";
 
       // Construct an embed with the extended summoner information
       const embed = {
@@ -96,6 +97,11 @@ module.exports = {
           {
             name: "Rank Information",
             value: fullRank,
+            inline: true,
+          },
+          {
+            name: "Registered By",
+            value: `<@${owner}>`,
             inline: true,
           },
         ],
